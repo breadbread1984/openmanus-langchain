@@ -11,7 +11,7 @@ from browser_manager import BrowserManager
 FLAGS = flags.FLAGS
 
 def add_options():
-  flags.DEFINE_string('service_host', default = '0.0.0.0', help = 'service host')
+  flags.DEFINE_string('service_host', default = '127.0.0.1', help = 'service host')
   flags.DEFINE_integer('service_port', default = 8081, help = 'service port')
 
 def create_interface(browser_manager):

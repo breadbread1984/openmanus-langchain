@@ -4,6 +4,8 @@ ENV DISPLAY=:10
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
 
+COPY sandbox /app/sandbox
+
 RUN apt update && apt install openssl openssh-server python3 python3-pip xterm dbus-x11 libnspr4 libnss3 libasound2 -y
 
 # playwright
@@ -23,6 +25,16 @@ RUN echo 'root:qwe123' | chpasswd
 
 RUN sed -i 's/#PermitRootLogin.*/PermitRootLogin yes/g' /etc/ssh/sshd_config && \
     sed -i 's/#PasswordAuthentication.*/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+
+# setup nginx
+
+RUN apt install -y nginx
+
+COPY sandbox.com /etc/nginx/sites-available/
+
+COPY index.html /var/www/html/
+
+RUN ln -s /etc/nginx/sites-available/sandbox.com /etc/nginx/sites-enabled/sandbox.com && rm -f /etc/nginx/sites-enabled/default
 
 # copy startup script
 RUN mkdir -p /app
