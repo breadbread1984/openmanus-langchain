@@ -1,0 +1,15 @@
+version: '3'
+
+name: my-ssh-xpra
+services:
+  sandbox:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /app
+    command: bash start.sh
+    ports:
+      - 2222:22
+    environment:
+      - DISPLAY=:10
+    restart: always
