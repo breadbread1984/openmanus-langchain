@@ -10,6 +10,7 @@ services:
     command: bash start.sh
     ports:
       - 2222:22
+      - 8080:80
     environment:
       - DISPLAY=:10
     restart: always
