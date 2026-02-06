@@ -2,6 +2,7 @@
 
 from os import environ
 environ['DISPLAY'] = ':100'
+import asyncio
 from absl import flags, app
 import gradio as gr
 from gradio.routes import mount_gradio_app
@@ -143,11 +144,11 @@ def main(unused_argv):
   browser_manager = BrowserManager()
   interface = create_interface(browser_manager)
   application = mount_gradio_app(app = application, blocks = interface, path = '/')
-  uvicorn.run(
-    application,
-    host = FLAGS.service_host,
-    port = FLAGS.service_port
-  )
+  config = uvicorn.Config(application, host = FLAGS.service_host, port = FLAGS.service_port, loop = 'asyncio')
+  server = uvicorn.Server(config)
+  loop = asyncio.new_event_loop()
+  asyncio.set_event_loop(loop)
+  loop.run_until_complete(server.serve())
 
 if __name__ == "__main__":
   add_options()
