@@ -33,36 +33,6 @@ class BrowserManager:
                 self._page = self._browser.new_page()
         return self._page
 
-    def get_all_text_inputs(self, page):
-        form_inputs =  page.locator("""input[type="text"]:visible, input[type="password"]:visible, input[type="email"]:visible, input[type="url"]:visible, input[type="tel"]:visible, input[type="search"]:visible, textarea:visible""")
-        search_form = page.locator("div#searchform")
-        searchbox = search_form.get_by_role("searchbox")
-        textbox = search_form.get_by_role("textbox")
-        inputs = form_inputs.or_(searchbox).or_(textbox).all()
-        return inputs
-
-    def get_all_clickables(self, page):
-        clickable_form = page.locator("""input[type="submit"]:visible, input[type="button"]:visible, input[type="reset"]:visible, input[type="image"]:visible, input[type="checkbox"]:visible, input[type="radio"]:visible""")
-        buttons = page.get_by_role("button")
-        checkboxes = page.get_by_role("checkbox")
-        radios = page.get_by_role("radio")
-        clickables = clickable_form.or_(buttons).or_(checkboxes).or_(radios).all()
-        return clickables
-
-    def get_all_selectors(self, page):
-        return page.locator("""select, [role='combobox'], [role='listbox']""").all()
-
-    def debug(self,):
-        page = self.get_page()
-        clickables = self.get_all_clickables(page)
-        inputs = self.get_all_text_inputs(page)
-        selectors = self.get_all_selectors(page)
-        element_list = f"""clickables: {clickables}
-inputs: {inputs}
-selectors: {selectors}"""
-        with open('debug.txt', 'w') as f:
-          f.write(element_list)
-
     def navigate_to(self, url: str):
         page = self.get_page()
         if not url.startswith(("http://", "https://")):
@@ -78,21 +48,14 @@ selectors: {selectors}"""
         page = self.get_page()
         page.wait_for_timeout(seconds * 1e3)
 
-    def click_element(self, index: int):
+    def mouse_click(self, x, y):
         page = self.get_page()
-        clickables = self.get_all_clickables(page)
-        if 1 <= index <= len(clickables):
-            clickables[index - 1].click()
-        else:
-            raise ValueError(f"No clickable element found with index {index}")
+        page.mouse.click(x,y)
 
-    def input_text(self, index: int, text: str):
+    def mouse_click_then_type(self, x, y, text):
         page = self.get_page()
-        inputs = self.get_all_text_inputs(page)
-        if 1 <= index <= len(inputs):
-            inputs[index - 1].fill(text)
-        else:
-            raise ValueError(f"No input text box found with index {index}")
+        page.mouse.click(x,y)
+        page.keyboard.type(text, delay = 100)
 
     def send_keys(self, keys: str):
         page = self.get_page()
@@ -117,51 +80,7 @@ selectors: {selectors}"""
         page = self.get_page()
         page.evaluate(f"window.scrollBy(0, {-amount})")
 
-    def is_bottom(self, page):
-        scroll_y = page.evaluate("window.scrollY")
-        scroll_height = page.evaluate("document.body.scrollHeight")
-        client_height = page.evaluate("window.innerHeight")
-        return scroll_y + client_height >= scroll_height - 5
-
-    def scroll_to_text(self, text: str):
+    def take_screenshot(self,):
         page = self.get_page()
-        page.evaluate("window.scrollTo(0, 0)")
-        while not self.is_bottom(page):
-            locator = page.get_by_text(text, exact=False)
-            count = locator.count()
-            if count > 0:
-                locator.first().scroll_into_view_if_needed()
-                return
-            page.evaluate("window.scrollBy(0, 500)")
-            page.wait_for_timeout(500)
-        return
-
-    def get_dropdown_options(self, index: int):
-        page = self.get_page()
-        selectors = self.get_all_selectors(page)
-        if 1 <= index <= len(selectors):
-          locator = selectors[index - 1]
-          options = locator.evaluate(
-            """element => {
-                if (!element || element.tagName !== 'SELECT') return [];
-                return Array.from(element.options).map(option => option.textContent.trim());
-            }"""
-          )
-          return options
-        else:
-          raise ValueError(f"No input selector found with index {index}")
-
-    def select_dropdown_option(self, index: int, text: str):
-        page = self.get_page()
-        locator = page.locator("select").nth(index)
-        locator.select_option(label=text)
-
-    def click_coordinates(self, x: int, y: int):
-        page = self.get_page()
-        page.mouse.click(x, y)
-
-    def drag_drop(self, element_source: str, element_target: str):
-        page = self.get_page()
-        source_element = page.locator(f"#{element_source}")
-        target_element = page.locator(f"#{element_target}")
-        source_element.drag_to(target_element)
+        img_bytes = page.screenshot()
+        return img_bytes
