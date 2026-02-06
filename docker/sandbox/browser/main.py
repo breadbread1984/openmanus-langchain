@@ -106,15 +106,6 @@ def create_interface(browser_manager):
       with gr.Column():
         # tool 12
         with gr.Row():
-          gr.Markdown("# click coordinates")
-          click_coordinates_x = gr.Number(label = "x", precision = 0)
-          click_coordinates_y = gr.Number(label = "y", precision = 0)
-          click_coordinates_btn = gr.Button(value = "click_coordinates")
-        click_coordinates_btn.click(browser_manager.click_coordinates, inputs = [click_coordinates_x, click_coordinates_y], outputs = [], concurrency_limit = 64)
-    with gr.Row():
-      with gr.Column():
-        # tool 13
-        with gr.Row():
           gr.Markdown("# drag and drop")
           drag_and_drop_x1 = gr.Number(label = "x1", precision = 0)
           drag_and_drop_y1 = gr.Number(label = "y1", precision = 0)
