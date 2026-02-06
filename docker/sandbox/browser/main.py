@@ -106,7 +106,7 @@ def create_interface(browser_manager):
           gr.Markdown("# get dropdown options")
           get_dropdown_options_index = gr.Number(label = "index", precision = 0)
           get_dropdown_options_btn = gr.Button(value = "get_dropdown_options")
-          get_dropdown_options_options = gr.JSON(, interactive = False)
+          get_dropdown_options_options = gr.JSON(label = "options", interactive = False)
         get_dropdown_options_btn.click(browser_manager.get_dropdown_options, inputs = [get_dropdown_options_index], outputs = [get_dropdown_options_options])
     with gr.Row():
       with gr.Column():
