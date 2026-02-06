@@ -36,7 +36,17 @@ class BrowserManager:
     def debug(self,):
         page = self.get_page()
         clickables = page.locator('.auto-clickable').all()
-        inputs = page.locator("input, textarea, [contenteditable], [role='textbox']").all()
+        inputs = page.locator("""
+    input:not([type="hidden"]),
+    textarea,
+    [contenteditable][role="textbox"],
+    [role="textbox"],
+    [role="searchbox"],
+    [role="search"],
+    [role="searchbox"][data-role],
+    div[role="textbox"],
+    div[role="searchbox"]
+""").all()
         selectors = page.locator('select').all()
         element_list = f"""clickables: {clickables}
 inputs: {inputs}
@@ -65,7 +75,17 @@ selectors: {selectors}"""
 
     def input_text(self, index: int, text: str):
         page = self.get_page()
-        page.locator("input, textarea, [contenteditable], [role='textbox']").nth(index).fill(text)
+        page.locator("""
+    input:not([type="hidden"]),
+    textarea,
+    [contenteditable][role="textbox"],
+    [role="textbox"],
+    [role="searchbox"],
+    [role="search"],
+    [role="searchbox"][data-role],
+    div[role="textbox"],
+    div[role="searchbox"]
+""").nth(index).fill(text)
 
     def send_keys(self, keys: str):
         page = self.get_page()
