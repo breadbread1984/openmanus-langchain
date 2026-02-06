@@ -34,10 +34,20 @@ class BrowserManager:
         return self._page
 
     def get_all_text_inputs(self, page):
-        return page.locator("""input[type="text"]:visible, input[type="password"]:visible, input[type="email"]:visible, input[type="url"]:visible, input[type="tel"]:visible, input[type="search"]:visible""").all()
+        form_inputs =  page.locator("""input[type="text"]:visible, input[type="password"]:visible, input[type="email"]:visible, input[type="url"]:visible, input[type="tel"]:visible, input[type="search"]:visible, textarea:visible""")
+        search_form = page.locator("div#searchform")
+        searchbox = search_form.get_by_role("searchbox")
+        textbox = search_form.get_by_role("textbox")
+        inputs = form_inputs.or_(searchbox).or_(textbox).all()
+        return inputs
 
     def get_all_clickables(self, page):
-        return page.locator("""input[type="submit"]:visible, input[type="button"]:visible, input[type="reset"]:visible, input[type="image"]:visible""").all()
+        clickable_form = page.locator("""input[type="submit"]:visible, input[type="button"]:visible, input[type="reset"]:visible, input[type="image"]:visible, input[type="checkbox"]:visible, input[type="radio"]:visible""")
+        buttons = page.get_by_role("button")
+        checkboxes = page.get_by_role("checkbox")
+        radios = page.get_by_role("radio")
+        clickables = clickable_form.or_(buttons).or_(checkboxes).or_(radios).all()
+        return clickables
 
     def get_all_selectors(self, page):
         return page.locator("""select, [role='combobox'], [role='listbox']""").all()
