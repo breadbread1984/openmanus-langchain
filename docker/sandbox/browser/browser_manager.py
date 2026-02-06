@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import threading
 from playwright.sync_api import sync_playwright
 
 class BrowserManager:
