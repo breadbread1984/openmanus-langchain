@@ -20,7 +20,7 @@ wait $XPRAPID
 # 3) launch sandbox
 # 3.1) launch browser sandbox
 cd /app/sandbox/
-python3 main.py --service_host 127.0.0.1 --service_port 8081 &
+python3 main.py --service_host 127.0.0.1 --service_port 8080 &
 BROWSER_SANDBOX_PID=$!
 wait $BROWSER_SANDBOX_PID
 
