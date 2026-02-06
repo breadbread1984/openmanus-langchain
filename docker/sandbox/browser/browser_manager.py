@@ -36,11 +36,13 @@ class BrowserManager:
     def debug(self,):
         page = self.get_page()
         clickables = page.locator('.auto-clickable').all()
-        inputs = page.locator('input').all()
+        inputs = page.locator("input, textarea, [contenteditable], [role='textbox']").all()
         selectors = page.locator('select').all()
-        print(f"""clickables: {clickables}
+        element_list = f"""clickables: {clickables}
 inputs: {inputs}
-selectors: {selectors}""")
+selectors: {selectors}"""
+        with open('debug.txt', 'w') as f:
+          f.write(element_list)
 
     def navigate_to(self, url: str):
         page = self.get_page()
@@ -63,7 +65,7 @@ selectors: {selectors}""")
 
     def input_text(self, index: int, text: str):
         page = self.get_page()
-        page.locator('input').nth(index).fill(text)
+        page.locator("input, textarea, [contenteditable], [role='textbox']").nth(index).fill(text)
 
     def send_keys(self, keys: str):
         page = self.get_page()
