@@ -33,20 +33,79 @@ class BrowserManager:
                 self._page = self._browser.new_page()
         return self._page
 
+    def get_all_text_input_selectors(self, page):
+        selector_js = """
+    () => {
+        const elements = Array.from(
+            document.querySelectorAll(
+                "input[type='text'], input:not([type]), input[type='search'], "
+                + "textarea, [contenteditable][role='textbox'], [role='textbox'], "
+                + "[role='searchbox'], div[role='textbox'], div[role='searchbox']"
+            )
+        );
+
+        return elements.map((el, idx) => {
+            // 尝试用 best practice 的 selector，比如：id、[name]、[aria-label] 等
+            if (el.id) return { index: idx + 1, selector: "#" + CSS.escape(el.id) };
+            if (el.name) return { index: idx + 1, selector: `input[name="${CSS.escape(el.name)}"]` };
+            if (el.getAttribute('aria-label'))
+                return { index: idx + 1, selector: `[aria-label="${CSS.escape(el.getAttribute('aria-label'))}"]` };
+            if (el.getAttribute('placeholder'))
+                return { index: idx + 1, selector: `[placeholder="${CSS.escape(el.getAttribute('placeholder'))}"]` };
+            // 保底：用标签 + role + index
+            return {
+                index: idx + 1,
+                selector: `${el.tagName.toLowerCase()}[role='${CSS.escape(el.getAttribute('role') || '')}']`
+            };
+        });
+    }
+    """
+        return page.evaluate(selector_js)
+
+    def get_all_clickable_selectors(self, page):
+        js = """
+    () => {
+        const candidates = Array.from(
+            document.querySelectorAll(
+                "button, a, [role='button'], [role='link'], "
+                + "[onclick], [tabindex]:not([tabindex='-1']), "
+                + "input[type='button'], input[type='submit'], input[type='reset'], "
+                + "input[type='image']"
+            )
+        );
+
+        return candidates
+            .filter(el => {
+                // 过滤掉 disabled、不可见、不可交互的
+                if (el.disabled || el.getAttribute('disabled') != null) return false;
+                if (!el.offsetParent) return false; // 不可见
+                const style = window.getComputedStyle(el);
+                if (style.display === 'none' || style.visibility === 'hidden') return false;
+                return true;
+            })
+            .map((el, idx) => {
+                // 优先用 id、[name]、[aria-label] 等
+                if (el.id) return { index: idx + 1, selector: '#' + CSS.escape(el.id) };
+                if (el.name) return { index: idx + 1, selector: `*[name="${CSS.escape(el.name)}"]` };
+                const ariaLabel = el.getAttribute('aria-label');
+                if (ariaLabel) return { index: idx + 1, selector: `[aria-label="${CSS.escape(ariaLabel)}"]` };
+                const text = el.textContent.trim();
+                if (text) return { index: idx + 1, selector: `:text("${CSS.escape(text)}")` };
+                // 保底：用标签名 + role / type
+                const role = el.getAttribute('role');
+                const type = el.getAttribute('type');
+                if (role) return { index: idx + 1, selector: `${el.tagName.toLowerCase()}[role='${CSS.escape(role)}']` };
+                if (type) return { index: idx + 1, selector: `${el.tagName.toLowerCase()}[type='${CSS.escape(type)}']` };
+                return { index: idx + 1, selector: el.tagName.toLowerCase() };
+            });
+    }
+    """
+        return page.evaluate(js)
+
     def debug(self,):
         page = self.get_page()
-        clickables = page.locator('.auto-clickable').all()
-        inputs = page.locator("""
-    input:not([type="hidden"]),
-    textarea,
-    [contenteditable][role="textbox"],
-    [role="textbox"],
-    [role="searchbox"],
-    [role="search"],
-    [role="searchbox"][data-role],
-    div[role="textbox"],
-    div[role="searchbox"]
-""").all()
+        clickables = self.get_all_clickable_seletors(page)
+        inputs = self.get_all_text_input_selectors(page)
         selectors = page.locator('select').all()
         element_list = f"""clickables: {clickables}
 inputs: {inputs}
@@ -71,21 +130,23 @@ selectors: {selectors}"""
 
     def click_element(self, index: int):
         page = self.get_page()
-        page.locator('.auto-clickable').nth(index).click()
+        selectors = self.get_all_clickable_selectors(page)
+        entry = next((s for s in selectors if s['index'] == index), None)
+        if entry:
+            locator = page.locator(entry['selector'])
+            locator.click()
+        else:
+            raise ValueError(f"No clickable element found with index {index}")
 
     def input_text(self, index: int, text: str):
         page = self.get_page()
-        page.locator("""
-    input:not([type="hidden"]),
-    textarea,
-    [contenteditable][role="textbox"],
-    [role="textbox"],
-    [role="searchbox"],
-    [role="search"],
-    [role="searchbox"][data-role],
-    div[role="textbox"],
-    div[role="searchbox"]
-""").nth(index).fill(text)
+        selectors = self.get_all_text_input_selectors(page)
+        entry = next((s for s in selectors if s['index'] == index), None)
+        if entry:
+            locator = page.locator(entry['selector'])
+            locator.fill(text)
+        else:
+            raise ValueError(f"No input text box found with index {index}")
 
     def send_keys(self, keys: str):
         page = self.get_page()
