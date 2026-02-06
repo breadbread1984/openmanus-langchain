@@ -23,7 +23,7 @@ def create_interface(browser_manager):
         # tool 1
         with gr.Row():
           gr.Markdown("# navigate to")
-          navigate_to_url = gr.TextBox(label = 'url')
+          navigate_to_url = gr.Textbox(label = 'url')
           navigate_to_btn = gr.Button(value = "navigate_to")
         navigate_to_btn.click(browser_manager.navigate_to, inputs = [navigate_to_url], outputs = [])
       with gr.Column():
@@ -53,14 +53,14 @@ def create_interface(browser_manager):
         with gr.Row():
           gr.Markdown("# input text")
           input_text_index = gr.Number(label = "index", precision = 0)
-          input_text_text = gr.TextBox(label = "text")
+          input_text_text = gr.Textbox(label = "text")
           input_text_btn = gr.Button(value = "input_text")
         input_text_btn.click(browser_manager.input_text, inputs = [input_text_index, input_text_text], outputs = [])
       with gr.Column():
         # tool 6
         with gr.Row():
           gr.Markdown("# send keys")
-          send_keys_keys = gr.TextBox(label = "keys")
+          send_keys_keys = gr.Textbox(label = "keys")
           send_keys_btn = gr.Button(value = "send_keys")
         send_keys_btn.click(browser_manager.send_keys, inputs = [send_keys_keys], outputs = [])
       with gr.Column():
@@ -97,7 +97,7 @@ def create_interface(browser_manager):
         # tool 11
         with gr.Row():
           gr.Markdown("# scroll to text")
-          scroll_to_text_text = gr.TextBox(label = "text")
+          scroll_to_text_text = gr.Textbox(label = "text")
           scroll_to_text_btn = gr.Button(value = "scroll_to_text")
         scroll_to_text_btn.click(browser_manager.scroll_to_text, inputs = [scroll_to_text_text], outputs = [])
       with gr.Column():
@@ -114,7 +114,7 @@ def create_interface(browser_manager):
         with gr.Row():
           gr.Markdown("# select dropdown option")
           select_dropdown_option_index = gr.Number(label = "index", precision = 0)
-          select_dropdown_option_text = gr.TextBox(label = "text")
+          select_dropdown_option_text = gr.Textbox(label = "text")
           select_dropdown_option_btn = gr.Button(value = "select_dropdown_option")
         select_dropdown_option_btn.click(browser_manager.select_dropdown_option, inputs = [select_dropdown_option_index, select_dropdown_option_text], outputs = [])
       with gr.Column():
@@ -129,8 +129,8 @@ def create_interface(browser_manager):
         # tool 15
         with gr.Row():
           gr.Markdown("# drag drop")
-          drag_drop_element_source = gr.TextBox(label = "element_source")
-          drag_drop_element_target = gr.TextBox(label = "element_target")
+          drag_drop_element_source = gr.Textbox(label = "element_source")
+          drag_drop_element_target = gr.Textbox(label = "element_target")
           drag_drop_btn = gr.Button(value = "drag_drop")
         drag_drop_btn.click(browser_manager.drag_drop, inputs = [drag_drop_element_source, drag_drop_element_target], outputs = [])
   return interface
