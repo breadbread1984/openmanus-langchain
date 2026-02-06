@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import threading
+import tempfile
 from playwright.sync_api import sync_playwright
 
 class BrowserManager:
@@ -82,5 +83,14 @@ class BrowserManager:
 
     def take_screenshot(self,):
         page = self.get_page()
-        img_bytes = page.screenshot()
-        return img_bytes
+        img_bytes = page.screenshot(type="png")
+        with tempfile.NamedTemporaryFile(suffix = ".png", delete = False) as f:
+            f.write(img_bytes)
+            return f.name
+
+    def drag_and_drop(self, x1, y1, x2, y2, steps = 5):
+        page = self.get_page()
+        page.mouse.move(x1,y1)
+        page.mouse.down()
+        page.mouse.move(x2,y2,steps = steps)
+        page.mouse.up()

@@ -43,20 +43,22 @@ def create_interface(browser_manager):
       with gr.Column():
         # tool 4
         with gr.Row():
-          gr.Markdown("# click element")
-          click_element_index = gr.Number(label = "index", precision = 0)
-          click_element_btn = gr.Button(value = "click_element")
-        click_element_btn.click(browser_manager.click_element, inputs = [click_element_index], outputs = [], concurrency_limit = 64)
+          gr.Markdown("# mouse click")
+          mouse_click_x = gr.Number(label = "x", precision = 0)
+          mouse_click_y = gr.Number(label = "y", precision = 0)
+          mouse_click_btn = gr.Button(value = "mouse_click")
+        mouse_click_btn.click(browser_manager.mouse_click, inputs = [mouse_click_x, mouse_click_y], outputs = [], concurrency_limit = 64)
     with gr.Row():
       # line 2
       with gr.Column():
         # tool 5
         with gr.Row():
-          gr.Markdown("# input text")
-          input_text_index = gr.Number(label = "index", precision = 0)
-          input_text_text = gr.Textbox(label = "text")
-          input_text_btn = gr.Button(value = "input_text")
-        input_text_btn.click(browser_manager.input_text, inputs = [input_text_index, input_text_text], outputs = [], concurrency_limit = 64)
+          gr.Markdown("# mouse click then type")
+          mouse_click_then_type_x = gr.Number(label = "x", precision = 0)
+          mouse_click_then_type_y = gr.Number(label = "y", precision = 0)
+          mouse_click_then_type_text = gr.Textbox(label = "text")
+          mouse_click_then_type_btn = gr.Button(value = "mouse_click_then_type")
+        mouse_click_then_type_btn.click(browser_manager.mouse_click_then_type, inputs = [mouse_click_then_type_x, mouse_click_then_type_y, mouse_click_then_type_text], outputs = [], concurrency_limit = 64)
       with gr.Column():
         # tool 6
         with gr.Row():
@@ -97,43 +99,29 @@ def create_interface(browser_manager):
       with gr.Column():
         # tool 11
         with gr.Row():
-          gr.Markdown("# scroll to text")
-          scroll_to_text_text = gr.Textbox(label = "text")
-          scroll_to_text_btn = gr.Button(value = "scroll_to_text")
-        scroll_to_text_btn.click(browser_manager.scroll_to_text, inputs = [scroll_to_text_text], outputs = [], concurrency_limit = 64)
+          gr.Markdown("# take screenshot")
+          take_screenshot_btn = gr.Button(value = "take_screenshot_btn")
+          take_screenshot_img = gr.File(label = "download screen shot")
+        take_screenshot_btn.click(browser_manager.take_screenshot, inputs = [], outputs = [take_screenshot_img], concurrency_limit = 64)
       with gr.Column():
         # tool 12
-        with gr.Row():
-          gr.Markdown("# get dropdown options")
-          get_dropdown_options_index = gr.Number(label = "index", precision = 0)
-          get_dropdown_options_btn = gr.Button(value = "get_dropdown_options")
-          get_dropdown_options_options = gr.JSON(label = "options")
-        get_dropdown_options_btn.click(browser_manager.get_dropdown_options, inputs = [get_dropdown_options_index], outputs = [get_dropdown_options_options], concurrency_limit = 64)
-    with gr.Row():
-      with gr.Column():
-        # tool 13
-        with gr.Row():
-          gr.Markdown("# select dropdown option")
-          select_dropdown_option_index = gr.Number(label = "index", precision = 0)
-          select_dropdown_option_text = gr.Textbox(label = "text")
-          select_dropdown_option_btn = gr.Button(value = "select_dropdown_option")
-        select_dropdown_option_btn.click(browser_manager.select_dropdown_option, inputs = [select_dropdown_option_index, select_dropdown_option_text], outputs = [], concurrency_limit = 64)
-      with gr.Column():
-        # tool 14
         with gr.Row():
           gr.Markdown("# click coordinates")
           click_coordinates_x = gr.Number(label = "x", precision = 0)
           click_coordinates_y = gr.Number(label = "y", precision = 0)
           click_coordinates_btn = gr.Button(value = "click_coordinates")
         click_coordinates_btn.click(browser_manager.click_coordinates, inputs = [click_coordinates_x, click_coordinates_y], outputs = [], concurrency_limit = 64)
+    with gr.Row():
       with gr.Column():
-        # tool 15
+        # tool 13
         with gr.Row():
-          gr.Markdown("# drag drop")
-          drag_drop_element_source = gr.Textbox(label = "element_source")
-          drag_drop_element_target = gr.Textbox(label = "element_target")
-          drag_drop_btn = gr.Button(value = "drag_drop")
-        drag_drop_btn.click(browser_manager.drag_drop, inputs = [drag_drop_element_source, drag_drop_element_target], outputs = [], concurrency_limit = 64)
+          gr.Markdown("# drag and drop")
+          drag_and_drop_x1 = gr.Number(label = "x1", precision = 0)
+          drag_and_drop_y1 = gr.Number(label = "y1", precision = 0)
+          drag_and_drop_x2 = gr.Number(label = "x2", precision = 0)
+          drag_and_drop_y2 = gr.Number(label = "y2", precision = 0)
+          drag_and_drop_btn = gr.Button(value = "drag_and_drop")
+        drag_and_drop_btn.click(browser_manager.drag_and_drop, inputs = [drag_and_drop_x1, drag_and_drop_y1, drag_and_drop_x2, drag_and_drop_y2], outputs = [], concurrency_limit = 64)
   return interface
 
 def main(unused_argv):
