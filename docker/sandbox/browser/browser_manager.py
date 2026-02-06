@@ -5,21 +5,26 @@ from playwright.sync_api import sync_playwright
 
 class BrowserManager:
     def __init__(self):
-        self._lock = threading.RLock()  # 保证线程安全
+        self._lock = threading.RLock()
         self._browser = None
         self._page = None
         self._playwright = None
 
     def _ensure_browser(self):
         if self._browser is None:
+            # 在当前线程启动 playwright
             self._playwright = sync_playwright().start()
             self._browser = self._playwright.chromium.launch(headless=False)
 
-    def __del__(self):
-        if self._browser is not None:
-            self._browser.close()
-        if self._playwright is not None:
-            self._playwright.close()
+    def close_browser(self):
+        with self._lock:
+            if self._browser is not None:
+                self._browser.close()
+            if self._playwright is not None:
+                self._playwright.close()
+            self._browser = None
+            self._playwright = None
+            self._page = None
 
     def get_page(self):
         with self._lock:
@@ -30,6 +35,8 @@ class BrowserManager:
 
     def navigate_to(self, url: str):
         page = self.get_page()
+        if not url.startswith(("http://", "https://")):
+            url = "https://" + url
         page.goto(url)
 
     def go_back(self):
