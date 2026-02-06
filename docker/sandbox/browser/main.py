@@ -139,7 +139,7 @@ def create_interface(browser_manager):
 def main(unused_argv):
   browser_manager = BrowserManager()
   app = create_interface(browser_manager)
-  app.launch(server_name = FLAGS.service_host, server_port = FLAGS.service_port, root_path = '/browser/')
+  app.launch(server_name = FLAGS.service_host, server_port = FLAGS.service_port, root_path = '/browser')
 
 if __name__ == "__main__":
   add_options()
