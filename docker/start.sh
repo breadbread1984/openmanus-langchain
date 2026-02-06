@@ -25,6 +25,11 @@ BROWSER_SANDBOX_PID=$!
 wait $BROWSER_SANDBOX_PID
 
 # 4) launch nginx
+ln -s /app/index.html /var/www/html/
+ln -s /app/sandbox.com /etc/nginx/sites-available/
+ln -s /app/sandbox.com /etc/nginx/sites-enabled/
+rm -f /etc/nginx/sites-enabled/default
+
 nginx -g "daemon off;" &
 NGINX_PID=$!
 wait $NGINX_PID

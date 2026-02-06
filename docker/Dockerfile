@@ -27,19 +27,5 @@ RUN sed -i 's/#PermitRootLogin.*/PermitRootLogin yes/g' /etc/ssh/sshd_config && 
     sed -i 's/#PasswordAuthentication.*/PasswordAuthentication yes/g' /etc/ssh/sshd_config
 
 # setup nginx
-
 RUN apt install -y nginx
-
-COPY sandbox.com /etc/nginx/sites-available/
-
-COPY index.html /var/www/html/
-
-RUN ln -s /etc/nginx/sites-available/sandbox.com /etc/nginx/sites-enabled/sandbox.com && rm -f /etc/nginx/sites-enabled/default
-
-# copy startup script
-RUN mkdir -p /app
-
-COPY start.sh /app/start.sh
-
-RUN chmod +x /app/start.sh
 
