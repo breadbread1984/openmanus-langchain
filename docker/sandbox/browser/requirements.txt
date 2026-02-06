@@ -1,5 +1,5 @@
-"gradio"
-"absl-py"
-"fastapi"
-"uvicorn"
-"playwright"
+gradio
+absl-py
+fastapi
+uvicorn
+playwright
