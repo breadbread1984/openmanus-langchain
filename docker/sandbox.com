@@ -1,6 +1,6 @@
 server {
-  listen 80 http;
-  server_name sandbox.com;
+  listen 80;
+  server_name 0.0.0.0;
 
   root /var/www/html/;
   index index.html index.htm;

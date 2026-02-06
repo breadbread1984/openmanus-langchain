@@ -23,7 +23,7 @@ echo "3) starting sandbox browser service ..."
 cd /app/sandbox/browser
 python3 -m pip install -r requirements.txt
 playwright install
-python3 main.py --service_host 0.0.0.0 --service_port 8080 &
+python3 main.py --service_host 0.0.0.0 --service_port 8081 &
 BROWSER_SANDBOX_PID=$!
 
 # 4) launch nginx
