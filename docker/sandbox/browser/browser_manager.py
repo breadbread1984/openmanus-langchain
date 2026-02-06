@@ -65,37 +65,38 @@ class BrowserManager:
     def get_all_clickable_selectors(self, page):
         js = """
     () => {
+        // 用更宽泛的 selector 找“可能被点击”的元素
         const candidates = Array.from(
             document.querySelectorAll(
-                "button, a, [role='button'], [role='link'], "
-                + "[onclick], [tabindex]:not([tabindex='-1']), "
-                + "input[type='button'], input[type='submit'], input[type='reset'], "
-                + "input[type='image']"
+                "button, a, [role='button'], [role='link'], [role='menuitem'], "
+                + "[role='tab'], [role='menuitemcheckbox'], [role='menuitemradio'], "
+                + "[role='option'], [role='checkbox'], [role='radio'], "
+                + "[tabindex]:not([tabindex='-1']), "
+                + "[aria-controls], [aria-label], [data-button], [data-click], [data-jsarwt], "
+                + ".btn, .button, .mdc-button, .gNO89b, .RNmpXc, [data-ved]"
             )
         );
 
+        // 仍然过滤掉 disabled、不可见、不可交互的
         return candidates
             .filter(el => {
-                // 过滤掉 disabled、不可见、不可交互的
-                if (el.disabled || el.getAttribute('disabled') != null) return false;
-                if (!el.offsetParent) return false; // 不可见
+                if (el.disabled || el.getAttribute('aria-disabled') === 'true') return false;
+                if (!el.offsetParent) return false;
                 const style = window.getComputedStyle(el);
                 if (style.display === 'none' || style.visibility === 'hidden') return false;
+                if (style.pointerEvents === 'none') return false;
                 return true;
             })
             .map((el, idx) => {
-                // 优先用 id、[name]、[aria-label] 等
+                // 用标准属性确定 selector
                 if (el.id) return { index: idx + 1, selector: '#' + CSS.escape(el.id) };
-                if (el.name) return { index: idx + 1, selector: `*[name="${CSS.escape(el.name)}"]` };
+                if (el.name) return { index: idx + 1, selector: `*[name='${CSS.escape(el.name)}']` };
                 const ariaLabel = el.getAttribute('aria-label');
-                if (ariaLabel) return { index: idx + 1, selector: `[aria-label="${CSS.escape(ariaLabel)}"]` };
+                if (ariaLabel) return { index: idx + 1, selector: `[aria-label='${CSS.escape(ariaLabel)}']` };
                 const text = el.textContent.trim();
-                if (text) return { index: idx + 1, selector: `:text("${CSS.escape(text)}")` };
-                // 保底：用标签名 + role / type
+                if (text) return { index: idx + 1, selector: `:text('${CSS.escape(text)}')` };
                 const role = el.getAttribute('role');
-                const type = el.getAttribute('type');
                 if (role) return { index: idx + 1, selector: `${el.tagName.toLowerCase()}[role='${CSS.escape(role)}']` };
-                if (type) return { index: idx + 1, selector: `${el.tagName.toLowerCase()}[type='${CSS.escape(type)}']` };
                 return { index: idx + 1, selector: el.tagName.toLowerCase() };
             });
     }
