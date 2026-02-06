@@ -20,6 +20,8 @@ wait $XPRAPID
 # 3) launch sandbox
 # 3.1) launch browser sandbox
 cd /app/sandbox/
+python3 -m pip install .
+playwright install
 python3 main.py --service_host 0.0.0.0 --service_port 8080 &
 BROWSER_SANDBOX_PID=$!
 wait $BROWSER_SANDBOX_PID
