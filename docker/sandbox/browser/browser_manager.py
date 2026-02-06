@@ -33,11 +33,21 @@ class BrowserManager:
                 self._page = self._browser.new_page()
         return self._page
 
+    def debug(self,):
+        page = self.get_page()
+        clickables = page.locator('.auto-clickable').all()
+        inputs = page.locator('input').all()
+        selectors = page.locator('select').all()
+        print(f"""clickables: {clickables}
+inputs: {inputs}
+selectors: {selectors}""")
+
     def navigate_to(self, url: str):
         page = self.get_page()
         if not url.startswith(("http://", "https://")):
             url = "https://" + url
         page.goto(url)
+        self.debug()
 
     def go_back(self):
         page = self.get_page()
