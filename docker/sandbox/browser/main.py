@@ -45,7 +45,7 @@ def create_interface(browser_manager):
           gr.Markdown("# click element")
           click_element_index = gr.Number(label = "index", precision = 0)
           click_element_btn = gr.Button(value = "click_element")
-        click_element_btn.click(browser_mananger.click_element, inputs = [click_element_index], outputs = [])
+        click_element_btn.click(browser_manager.click_element, inputs = [click_element_index], outputs = [])
     with gr.Row():
       # line 2
       with gr.Column():
