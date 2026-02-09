@@ -1,5 +1,0 @@
-gradio
-absl-py
-fastapi
-uvicorn
-playwright
