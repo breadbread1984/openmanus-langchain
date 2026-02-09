@@ -27,7 +27,7 @@ def load_browser_tool(configs):
         task = query,
         llm = self.config.llm
       )
-      result = await self.config.agent.run()
+      result = await agent.run()
       return BrowserOutput(result = result)
     def _run(self, query: str, run_manager: Optional[CallbackManagerForToolRun] = None):
       return asyncio.run(self._arun(query, run_manager = run_manager))
