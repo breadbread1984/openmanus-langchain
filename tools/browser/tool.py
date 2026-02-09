@@ -22,7 +22,7 @@ def load_browser_tool(configs):
     description: str = "a tool to execute web task. Input should be a natural language task like 'find out which country leads medal table of winter olympic games 2026'."
     args_schema: Type[BaseModel] = BrowserInput
     config: BrowserConfig
-    def _arun(self, query: str, state: Annotated[dict, InjectedState], run_manager: Optional[CallbackManagerForToolRun] = None):
+    async def _arun(self, query: str, state: Annotated[dict, InjectedState], run_manager: Optional[CallbackManagerForToolRun] = None):
       agent = Agent(
         task = query,
         llm = self.config.llm
