@@ -31,6 +31,6 @@ def load_browser_tool(configs):
       result = await self.config.agent.run()
       return BrowserOutput(result = result)
     def _run(self, query: str, run_manager: Optional[CallbackManagerForToolRun] = None):
-      return asyncio.run(self._arun(query, state = state, run_manager = run_manager))
+      return asyncio.run(self._arun(query, run_manager = run_manager))
   return BrowserTool(config = BrowserConfig(llm = ChatOpenAI(api_key = configs.dashscope_key, base_url = configs.dashscope_url, model_name = configs.dashscope_model)))
 
