@@ -3,11 +3,10 @@
 import asyncio
 from typing import Type, List, Optional, Annotated, Literal, Union
 from pydantic import BaseModel, Field, validator, root_validator
-from langchain_openai import ChatOpenAI
 from langchain_core.tools.structured import StructuredTool
 from langchain_core.callbacks.manager import CallbackManagerForToolRun
 from langgraph.prebuilt import InjectedState
-from browser_use import Agent
+from browser_use import Agent, ChatOpenAI
 
 def load_browser_tool(configs):
   class BrowserInput(BaseModel):
@@ -32,5 +31,5 @@ def load_browser_tool(configs):
       return BrowserOutput(result = result)
     def _run(self, query: str, run_manager: Optional[CallbackManagerForToolRun] = None):
       return asyncio.run(self._arun(query, run_manager = run_manager))
-  return BrowserTool(config = BrowserConfig(llm = ChatOpenAI(api_key = configs.dashscope_key, base_url = configs.dashscope_url, model_name = configs.dashscope_model)))
+  return BrowserTool(config = BrowserConfig(llm = ChatOpenAI(api_key = configs.dashscope_key, base_url = configs.dashscope_url, model = configs.dashscope_model)))
 
