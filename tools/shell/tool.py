@@ -80,7 +80,7 @@ This tool is essential for running CLI tools, installing packages, and managing 
           cwd = join(self.workspace_path, execute_command.folder)
           if not exists(cwd): makedirs(cwd)
         # 3) execute command
-        command = f""" cd {cwd} ; {execute_command.command} ; echo "\n{self.done_marker}" """
+        command = f""" cd {cwd} ; {execute_command.command} ; echo "{self.done_marker}" """
         window = session.active_window
         pane = window.active_pane
         pane.send_keys(command)
@@ -91,7 +91,7 @@ This tool is essential for running CLI tools, installing packages, and managing 
             time.sleep(2)
             lines = pane.capture_pane()
             # watch for done marker in output
-            if any(self.done_marker in line for line in lines):
+            if any(self.done_marker == line.strip() for line in lines):
               # 5) capture output, kill session and return
               output = "\n".join(pane.capture_pane()[:-1])
               session.kill()
@@ -106,7 +106,7 @@ This tool is essential for running CLI tools, installing packages, and managing 
         window = session.active_window
         pane = window.active_pane
         lines = pane.capture_pane()
-        if any(self.done_marker in line for line in lines):
+        if any(self.done_marker == line.strip() for line in lines):
           output = "\n".join(pane.capture_pane())
           return ShellOutput(session_name = check_command_output.session_name, output = output, completed = True)
         else:
@@ -117,7 +117,7 @@ This tool is essential for running CLI tools, installing packages, and managing 
         matches = list(filter(lambda s:s.session_name == terminate_command.session_name, self.config.server.sessions))
         assert len(matches) != 0, "cannot find session with given session_name"
         session = matches[0]
-        session.kill_session()
+        session.kill()
         return ShellOutput(completed = True)
       elif action == "list_sessions":
         assert list_sessions is not None, "list_sessions is None!"
