@@ -86,7 +86,7 @@ This tool is essential for running CLI tools, installing packages, and managing 
         pane = window.active_pane
         pane.send_keys(command)
         # 4) block or not
-        if execute_command.blocking is not None:
+        if execute_command.blocking == True:
           start_time = time.time()
           while (time.time() - start_time) < execute_command.timeout:
             time.sleep(2)
