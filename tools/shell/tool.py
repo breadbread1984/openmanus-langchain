@@ -31,21 +31,21 @@ def load_shell_tool(configs):
     terminate_command: Optional[TerminateCommand] = Field(None, description = "parameters for action 'terminate_command'")
     list_sessions: Optional[ListSessions] = Field(None, description = "parameters for action 'list_sessions'")
     @model_validator(mode = "after")
-    def require_action_specific_field(self,)->ShellInput:
-      action = self.action
-      if action == "execute_command":
-        if self.execute_command is None:
+    @classmethod
+    def require_action_specific_field(cls, values: dict):
+      if values['action'] == "execute_command":
+        if values['execute_command'] is None:
           raise ValueError("execute_command must be provided when action is 'execute_command'")
-      elif action == "check_command_output":
-        if self.check_command_output is None:
+      elif values['action'] == "check_command_output":
+        if values['check_command_output'] is None:
           raise ValueError("check_command_output must be provided when action is 'check_command_output'")
-      elif action == "terminate_command":
-        if self.terminate_command is None:
+      elif values['action'] == "terminate_command":
+        if values['terminate_command'] is None:
           raise ValueError("terminate_command must be provided when action is 'terminate_command'")
-      elif action == "list_sessions":
-        if self.list_sessions is None:
+      elif values['action'] == "list_sessions":
+        if values['list_sessions'] is None:
           raise ValueError("list_sessions must be provided when action is 'list_sessions'")
-      return self
+      return cls(**values)
   class ShellOutput(BaseModel):
     session_name: Optional[str] = Field(None, description = "Optional name of the tmux session to use.")
     output: Optional[str] = Field(None, description = "output of the input command or a list of available session names")
