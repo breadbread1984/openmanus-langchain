@@ -2,3 +2,4 @@
 
 from .browser import *
 from .shell import *
+from .file_management import *

@@ -129,4 +129,4 @@ This tool is essential for running CLI tools, installing packages, and managing 
         raise Exception("unknown action!")
     async def _arun(self, action, execute_command = None, check_command_output = None, terminate_command = None, list_sessions = None, run_manager: Optional[CallbackManagerForToolRun] = None):
       raise NotImplementedError("Async execution is not supported!")
-  return ShellTool(config = ShellConfig(server = libtmux.Server()))
+  return ShellTool(config = ShellConfig(server = libtmux.Server()), workspace_path = configs.workspace_dir)
