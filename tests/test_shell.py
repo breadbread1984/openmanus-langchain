@@ -45,6 +45,28 @@ done""",
       }
     })
     print(result.output, result.completed)
+  def test_terminate_command(self,):
+    shell_tool = load_shell_tool(configs)
+    result = shell_tool.invoke({
+      'action': 'execute_command',
+      'execute_command': {
+        'command': """countdown=60;
+while [ $countdown -gt 0 ]; do 
+    echo \"countdown: $countdown seconds\";
+    sleep 1;
+    countdown=$((countdown-1)); 
+done""",
+        'blocking': False
+      } 
+    })
+    print(result.completed)
+    result = shell_tool.invoke({
+      'action': 'terminate_command',
+      'terminate_command': {
+        'session_name': result.session_name,
+      }
+    })
+    print(result.completed)
 
 if __name__ == "__main__":
   unittest.main()
