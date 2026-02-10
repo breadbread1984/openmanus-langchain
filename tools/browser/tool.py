@@ -27,7 +27,8 @@ def load_browser_tool(configs):
         task = query,
         llm = self.config.llm
       )
-      result = await agent.run()
+      history_list = await agent.run()
+      result = history_list.history[-1].result[-1].extracted_content
       return BrowserOutput(result = result)
     def _run(self, query: str, run_manager: Optional[CallbackManagerForToolRun] = None):
       return asyncio.run(self._arun(query, run_manager = run_manager))
