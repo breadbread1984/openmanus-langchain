@@ -15,7 +15,7 @@ import libtmux
 def load_shell_tool(configs):
   class ExecuteCommand(BaseModel):
     command: str = Field(description = "The shell command to execute. Use this for running CLI tools, installing packages, or system operations. Commands can be chained using &&, ||, and | operators.")
-    folder: Optional[str] = Field('/', description = "Optional relative path to a subdirectory of /workspace where the command should be executed. Example: 'data/pdfs'")
+    folder: Optional[str] = Field('', description = "Optional relative path to a subdirectory of /workspace where the command should be executed. Example: 'data/pdfs'")
     session_name: Optional[str] = Field(None, description = "Optional name of the tmux session to use. Use named sessions for related commands that need to maintain state.")
     blocking: Optional[bool] = Field(False, description = "Whether to wait for the command to complete. Defaults to false for non-blocking execution.")
     timeout: Optional[int] = Field(60, description = "Optional timeout in seconds for blocking commands. Defaults to 60. Ignored for non-blocking commands.")
