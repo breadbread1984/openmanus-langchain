@@ -8,7 +8,6 @@ from typing import Type, List, Optional, Annotated, Literal, Union
 from pydantic import BaseModel, Field, ValidationError, model_validator
 from langchain_core.tools.structured import StructuredTool
 from langchain_core.callbacks.manager import CallbackManagerForToolRun
-from langgraph.prebuilt import InjectedState
 import libtmux
 
 def load_shell_tool(configs):
@@ -66,7 +65,7 @@ This tool is essential for running CLI tools, installing packages, and managing 
     config: ShellConfig
     workspace_path: str = Field(default = "/workspace")
     done_marker: str = Field(default = f"DONE_{str(uuid4())}")
-    def _run(self, action, execute_command = None, check_command_output = None, terminate_command = None, list_sessions = None, state: Annotated[dict, InjectedState], run_manager: Optional[CallbackManagerForToolRun] = None):
+    def _run(self, action, execute_command = None, check_command_output = None, terminate_command = None, list_sessions = None, run_manager: Optional[CallbackManagerForToolRun] = None):
       if action == "execute_command":
         assert execute_command is not None, "execute_command is None!"
         # 1) create session or get session
@@ -124,6 +123,6 @@ This tool is essential for running CLI tools, installing packages, and managing 
         return ShellOutput(output = json.dumps(sessions, indent = 2, ensure_ascii = False), completed = True)
       else:
         raise Exception("unknown action!")
-    async def _arun(self, action, execute_command = None, check_command_output = None, terminate_command = None, list_sessions = None, state: Annotated[dict, InjectedState], run_manager: Optional[CallbackManagerForToolRun] = None):
+    async def _arun(self, action, execute_command = None, check_command_output = None, terminate_command = None, list_sessions = None, run_manager: Optional[CallbackManagerForToolRun] = None):
       raise NotImplementedError("Async execution is not supported!")
   return ShellTool(config = ShellConfig(server = libtmux.Server()))

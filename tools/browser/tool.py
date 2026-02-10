@@ -5,7 +5,6 @@ from typing import Type, List, Optional, Annotated, Literal, Union
 from pydantic import BaseModel, Field, validator, root_validator
 from langchain_core.tools.structured import StructuredTool
 from langchain_core.callbacks.manager import CallbackManagerForToolRun
-from langgraph.prebuilt import InjectedState
 from browser_use import Agent, ChatOpenAI
 
 def load_browser_tool(configs):
