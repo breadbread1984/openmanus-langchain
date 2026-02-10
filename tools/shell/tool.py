@@ -1,5 +1,9 @@
 #!/usr/bin/python3
 
+from uuid import uuid4
+import time
+from os import makedirs
+from os.path import join, exists
 from typing import Type, List, Optional, Annotated, Literal, Union
 from pydantic import BaseModel, Field, ValidationError, model_validator
 from langchain_core.tools.structured import StructuredTool
@@ -11,11 +15,11 @@ def load_shell_tool(configs):
   class ExecuteCommand(BaseModel):
     command: str = Field(description = "The shell command to execute. Use this for running CLI tools, installing packages, or system operations. Commands can be chained using &&, ||, and | operators.")
     folder: Optional[str] = Field(None, description = "Optional relative path to a subdirectory of /workspace where the command should be executed. Example: 'data/pdfs'")
-    session_name: Optional[str] = Field(None, description = "Optional name of the tmux session to use. Use named sessions for related commands that need to maintain state. Defaults to a random session name.")
+    session_name: Optional[str] = Field(None, description = "Optional name of the tmux session to use. Use named sessions for related commands that need to maintain state.")
     blocking: Optional[bool] = Field(False, description = "Whether to wait for the command to complete. Defaults to false for non-blocking execution.")
     timeout: Optional[int] = Field(60, description = "Optional timeout in seconds for blocking commands. Defaults to 60. Ignored for non-blocking commands.")
   class CheckCommandOutput(BaseModel):
-    session_name: Optional[str] = Field(None, description = "Optional name of the tmux session to use. Use named sessions for related commands that need to maintain state. Defaults to a random session name.")
+    session_name: str = Field(description = "name of the tmux session to use. Use named sessions for related commands that need to maintain state.")
     kill_session: Optional[bool] = Field(False, description = "Whether to terminate the tmux session after checking. Set to true when you're done with the command.")
   class TerminateCommand(BaseModel):
     session_name: Optional[str] = Field(None, description = "Optional name of the tmux session to use. Use named sessions for related commands that need to maintain state. Defaults to a random session name.")
@@ -44,8 +48,9 @@ def load_shell_tool(configs):
           raise ValueError("list_commands must be provided when action is 'list_commands'")
       return self
   class ShellOutput(BaseModel):
+    session_name: Optional[str] = Field(None, description = "Optional name of the tmux session to use.")
     output: Optional[str] = Field(None, description = "output string")
-    error: Optional[str] = Field(None, description = "error message")
+    completed: bool = Field(False, description = "whether the command completed?")
   class ShellConfig(BaseModel):
     class Config:
       arbitrary_types_allowed = True
@@ -59,10 +64,40 @@ Uses sessions to maintain state between commands.
 This tool is essential for running CLI tools, installing packages, and managing system operations."""
     args_schema: Type[BaseModel] = ShellInput
     config: ShellConfig
+    workspace_path: str = Field(default = "/workspace")
     async def _arun(self, action, execute_command = None, check_command_output = None, terminate_command = None, list_commands = None, state: Annotated[dict, InjectedState], run_manager: Optional[CallbackManagerForToolRun] = None):
       if action == "execute_command":
         assert execute_command is not None, "execute_command is None!"
-        # TODO
+        # 1) create session or get session
+        session_name = f"session_{str(uuid4())[:8]}" if execute_command.session_name else execute_command.session_name
+        sessions = [s.session_name for s in self.config.server.sessions]
+        if session_name not in sessions:
+          self.config.server.new_session(session_name = session_name)
+        # 2) goto working dir
+        cwd = self.workspace_path
+        if execute_command.folder is not None:
+          cwd = join(self.workspace_path, execute_command.folder)
+          if not exists(cwd): makedirs(cwd)
+        # 3) execute command
+        done_marker = f"DONE_{str(uuid4())}"
+        command = f""" cd {cwd} ; {execute_command.command} ; echo "\n{done_marker}" """
+        window = session.active_window
+        pane = window.active_pane
+        pane.send_keys(command)
+        # 4) block or not
+        if execute_command.blocking is not None:
+          start_time = time.time()
+          while (time.time() - start_time) < execute_command.timeout:
+            time.sleep(2)
+            lines = pane.capture_pane()
+            # watch for done marker in output
+            if any(done_marker in line for line in lines):
+              # 5) capture output, kill session and return
+              output = "\n".join(pane.capture_pane()[:-1])
+              session.kill_session()
+              return ShellOutput(output = output, completed = True)
+        # 5) return session_name
+        return ShellOutput(session_name = session_name, completed = False)
       elif action == "check_command_output":
         assert check_command_output is not None, "check_command_output is None!"
         # TODO
