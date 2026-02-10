@@ -10,6 +10,8 @@ from langchain_core.tools.structured import StructuredTool
 from langchain_core.callbacks.manager import CallbackManagerForToolRun
 import libtmux
 
+# NOTE: langchain-community has ShellTool which provide shell execution, but it cannot handle commands which blocks terminal
+
 def load_shell_tool(configs):
   class ExecuteCommand(BaseModel):
     command: str = Field(description = "The shell command to execute. Use this for running CLI tools, installing packages, or system operations. Commands can be chained using &&, ||, and | operators.")
