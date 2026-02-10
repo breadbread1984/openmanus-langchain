@@ -22,15 +22,15 @@ def load_shell_tool(configs):
     session_name: str = Field(description = "name of the tmux session to use. Use named sessions for related commands that need to maintain state.")
     kill_session: Optional[bool] = Field(False, description = "Whether to terminate the tmux session after checking. Set to true when you're done with the command.")
   class TerminateCommand(BaseModel):
-    session_name: Optional[str] = Field(None, description = "Optional name of the tmux session to use. Use named sessions for related commands that need to maintain state. Defaults to a random session name.")
-  class ListCommands(BaseModel):
+    session_name: str = Field(description = "name of the tmux session to use. Use named sessions for related commands that need to maintain state.")
+  class ListSessions(BaseModel):
     pass
   class ShellInput(BaseModel):
-    action: Literal['execute_command', 'check_command_output', 'terminate_command', 'list_commands'] = Field(description = "the shell action to perform")
+    action: Literal['execute_command', 'check_command_output', 'terminate_command', 'list_sessions'] = Field(description = "the shell action to perform")
     execute_command: Optional[ExecuteCommand] = Field(None, description = "parameters for action 'execute_command'")
     check_command_output: Optional[CheckCommandOutput] = Field(None, description = "parameters for action 'check_command_output'")
     terminate_command: Optional[TerminateCommand] = Field(None, description = "parameters for action 'terminate_command'")
-    list_commands: Optional[ListCommands] = Field(None, description = "parameters for action 'list_commands'")
+    list_sessions: Optional[ListSessions] = Field(None, description = "parameters for action 'list_sessions'")
     @model_validator(mode = "after")
     def require_action_specific_field(self,)->ShellInput:
       action = self.action
@@ -43,13 +43,13 @@ def load_shell_tool(configs):
       elif action == "terminate_command":
         if self.terminate_command is None:
           raise ValueError("terminate_command must be provided when action is 'terminate_command'")
-      elif action == "list_commands":
-        if self.list_commands is None:
-          raise ValueError("list_commands must be provided when action is 'list_commands'")
+      elif action == "list_sessions":
+        if self.list_sessions is None:
+          raise ValueError("list_sessions must be provided when action is 'list_sessions'")
       return self
   class ShellOutput(BaseModel):
     session_name: Optional[str] = Field(None, description = "Optional name of the tmux session to use.")
-    output: Optional[str] = Field(None, description = "output string")
+    output: Optional[str] = Field(None, description = "output of the input command or a list of available session names")
     completed: bool = Field(False, description = "whether the command completed?")
   class ShellConfig(BaseModel):
     class Config:
@@ -66,7 +66,7 @@ This tool is essential for running CLI tools, installing packages, and managing 
     config: ShellConfig
     workspace_path: str = Field(default = "/workspace")
     done_marker: str = Field(default = f"DONE_{str(uuid4())}")
-    async def _arun(self, action, execute_command = None, check_command_output = None, terminate_command = None, list_commands = None, state: Annotated[dict, InjectedState], run_manager: Optional[CallbackManagerForToolRun] = None):
+    def _run(self, action, execute_command = None, check_command_output = None, terminate_command = None, list_sessions = None, state: Annotated[dict, InjectedState], run_manager: Optional[CallbackManagerForToolRun] = None):
       if action == "execute_command":
         assert execute_command is not None, "execute_command is None!"
         # 1) create session or get session
@@ -113,11 +113,17 @@ This tool is essential for running CLI tools, installing packages, and managing 
           return ShellOutput(session_name = check_command_output.session_name, output = output, completed = False)
       elif action == "terminate_command":
         assert terminate_command is not None, "terminate_command is None!"
-        # TODO
-      elif action == "list_commands":
-        assert list_commands is not None, "list_commands is None!"
-        # TODO
+        matches = list(filter(lambda s:s.session_name == terminate_command.session_name, self.config.server.sessions))
+        assert len(matches) == 0, "cannot find session with given session_name"
+        session = matches[0]
+        session.kill_session()
+        return ShellOutput(completed = True)
+      elif action == "list_sessions":
+        assert list_sessions is not None, "list_sessions is None!"
+        sessions = [s.session_name for s in self.config.server.sessions]
+        return ShellOutput(output = json.dumps(sessions, indent = 2, ensure_ascii = False), completed = True)
       else:
         raise Exception("unknown action!")
-    def _run(self, action, execute_command = None, check_command_output = None, terminate_command = None, list_commands = None, state: Annotated[dict, InjectedState], run_manager: Optional[CallbackManagerForToolRun] = None):
-      
+    async def _arun(self, action, execute_command = None, check_command_output = None, terminate_command = None, list_sessions = None, state: Annotated[dict, InjectedState], run_manager: Optional[CallbackManagerForToolRun] = None):
+      raise NotImplementedError("Async execution is not supported!")
+  return ShellTool(config = ShellConfig(server = libtmux.Server()))
