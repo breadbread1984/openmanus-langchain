@@ -12,7 +12,7 @@ import configs
 class TestBrowser(unittest.TestCase):
   def test_browser(self,):
     browser_tool = load_browser_tool(configs)
-    result = browser_tool.invoke({'query': 'find out what options strategies to apply when market skyrockets up'})
+    result = browser_tool.invoke({'query': 'What is the Hang Seng Index today?'})
     print(result)
 
 if __name__ == "__main__":
