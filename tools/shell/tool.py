@@ -65,22 +65,24 @@ This tool is essential for running CLI tools, installing packages, and managing 
     args_schema: Type[BaseModel] = ShellInput
     config: ShellConfig
     workspace_path: str = Field(default = "/workspace")
+    done_marker: str = Field(default = f"DONE_{str(uuid4())}")
     async def _arun(self, action, execute_command = None, check_command_output = None, terminate_command = None, list_commands = None, state: Annotated[dict, InjectedState], run_manager: Optional[CallbackManagerForToolRun] = None):
       if action == "execute_command":
         assert execute_command is not None, "execute_command is None!"
         # 1) create session or get session
         session_name = f"session_{str(uuid4())[:8]}" if execute_command.session_name else execute_command.session_name
-        sessions = [s.session_name for s in self.config.server.sessions]
-        if session_name not in sessions:
-          self.config.server.new_session(session_name = session_name)
+        matches = list(filter(lambda s:s.session_name == session_name, self.config.server.sessions))
+        if len(matches) == 0:
+          session = self.config.server.new_session(session_name = session_name)
+        else:
+          session = matches[0]
         # 2) goto working dir
         cwd = self.workspace_path
         if execute_command.folder is not None:
           cwd = join(self.workspace_path, execute_command.folder)
           if not exists(cwd): makedirs(cwd)
         # 3) execute command
-        done_marker = f"DONE_{str(uuid4())}"
-        command = f""" cd {cwd} ; {execute_command.command} ; echo "\n{done_marker}" """
+        command = f""" cd {cwd} ; {execute_command.command} ; echo "\n{self.done_marker}" """
         window = session.active_window
         pane = window.active_pane
         pane.send_keys(command)
@@ -91,7 +93,7 @@ This tool is essential for running CLI tools, installing packages, and managing 
             time.sleep(2)
             lines = pane.capture_pane()
             # watch for done marker in output
-            if any(done_marker in line for line in lines):
+            if any(self.done_marker in line for line in lines):
               # 5) capture output, kill session and return
               output = "\n".join(pane.capture_pane()[:-1])
               session.kill_session()
@@ -100,7 +102,15 @@ This tool is essential for running CLI tools, installing packages, and managing 
         return ShellOutput(session_name = session_name, completed = False)
       elif action == "check_command_output":
         assert check_command_output is not None, "check_command_output is None!"
-        # TODO
+        matches = list(filter(lambda s:s.session_name == check_command_output.session_name, self.config.server.sessions))
+        assert len(matches) == 0, "cannot find session with given session_name"
+        lines = pane.capture_pane()
+        if any(self.done_marker in line for line in lines):
+          output = "\n".join(pane.capture_pane()[:-1])
+          return ShellOutput(output = output, completed = True)
+        else:
+          output = "\n".join(pane.capture_pane())
+          return ShellOutput(session_name = check_command_output.session_name, output = output, completed = False)
       elif action == "terminate_command":
         assert terminate_command is not None, "terminate_command is None!"
         # TODO
