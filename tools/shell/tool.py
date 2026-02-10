@@ -32,20 +32,20 @@ def load_shell_tool(configs):
     list_sessions: Optional[ListSessions] = Field(None, description = "parameters for action 'list_sessions'")
     @model_validator(mode = "after")
     @classmethod
-    def require_action_specific_field(cls, values: dict):
-      if values['action'] == "execute_command":
-        if values['execute_command'] is None:
+    def require_action_specific_field(cls, self):
+      if self.action == "execute_command":
+        if self.execute_command is None:
           raise ValueError("execute_command must be provided when action is 'execute_command'")
-      elif values['action'] == "check_command_output":
-        if values['check_command_output'] is None:
+      elif self.action == "check_command_output":
+        if self.check_command_output is None:
           raise ValueError("check_command_output must be provided when action is 'check_command_output'")
-      elif values['action'] == "terminate_command":
-        if values['terminate_command'] is None:
+      elif self.action == "terminate_command":
+        if self.terminate_command is None:
           raise ValueError("terminate_command must be provided when action is 'terminate_command'")
-      elif values['action'] == "list_sessions":
-        if values['list_sessions'] is None:
+      elif self.action == "list_sessions":
+        if self.list_sessions is None:
           raise ValueError("list_sessions must be provided when action is 'list_sessions'")
-      return cls(**values)
+      return self
   class ShellOutput(BaseModel):
     session_name: Optional[str] = Field(None, description = "Optional name of the tmux session to use.")
     output: Optional[str] = Field(None, description = "output of the input command or a list of available session names")
@@ -95,7 +95,7 @@ This tool is essential for running CLI tools, installing packages, and managing 
             if any(self.done_marker in line for line in lines):
               # 5) capture output, kill session and return
               output = "\n".join(pane.capture_pane()[:-1])
-              session.kill_session()
+              session.kill()
               return ShellOutput(output = output, completed = True)
         # 5) return session_name
         return ShellOutput(session_name = session_name, completed = False)
