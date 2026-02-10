@@ -19,7 +19,6 @@ def load_shell_tool(configs):
     timeout: Optional[int] = Field(60, description = "Optional timeout in seconds for blocking commands. Defaults to 60. Ignored for non-blocking commands.")
   class CheckCommandOutput(BaseModel):
     session_name: str = Field(description = "name of the tmux session to use. Use named sessions for related commands that need to maintain state.")
-    kill_session: Optional[bool] = Field(False, description = "Whether to terminate the tmux session after checking. Set to true when you're done with the command.")
   class TerminateCommand(BaseModel):
     session_name: str = Field(description = "name of the tmux session to use. Use named sessions for related commands that need to maintain state.")
   class ListSessions(BaseModel):
@@ -69,7 +68,7 @@ This tool is essential for running CLI tools, installing packages, and managing 
       if action == "execute_command":
         assert execute_command is not None, "execute_command is None!"
         # 1) create session or get session
-        session_name = f"session_{str(uuid4())[:8]}" if execute_command.session_name else execute_command.session_name
+        session_name = f"session_{str(uuid4())[:8]}" if execute_command.session_name is None else execute_command.session_name
         matches = list(filter(lambda s:s.session_name == session_name, self.config.server.sessions))
         if len(matches) == 0:
           session = self.config.server.new_session(session_name = session_name)
@@ -96,24 +95,27 @@ This tool is essential for running CLI tools, installing packages, and managing 
               # 5) capture output, kill session and return
               output = "\n".join(pane.capture_pane()[:-1])
               session.kill()
-              return ShellOutput(output = output, completed = True)
+              return ShellOutput(session_name = session_name, output = output, completed = True)
         # 5) return session_name
         return ShellOutput(session_name = session_name, completed = False)
       elif action == "check_command_output":
         assert check_command_output is not None, "check_command_output is None!"
         matches = list(filter(lambda s:s.session_name == check_command_output.session_name, self.config.server.sessions))
-        assert len(matches) == 0, "cannot find session with given session_name"
+        assert len(matches) != 0, "cannot find session with given session_name"
+        session = matches[0]
+        window = session.active_window
+        pane = window.active_pane
         lines = pane.capture_pane()
         if any(self.done_marker in line for line in lines):
-          output = "\n".join(pane.capture_pane()[:-1])
-          return ShellOutput(output = output, completed = True)
+          output = "\n".join(pane.capture_pane())
+          return ShellOutput(session_name = check_command_output.session_name, output = output, completed = True)
         else:
           output = "\n".join(pane.capture_pane())
           return ShellOutput(session_name = check_command_output.session_name, output = output, completed = False)
       elif action == "terminate_command":
         assert terminate_command is not None, "terminate_command is None!"
         matches = list(filter(lambda s:s.session_name == terminate_command.session_name, self.config.server.sessions))
-        assert len(matches) == 0, "cannot find session with given session_name"
+        assert len(matches) != 0, "cannot find session with given session_name"
         session = matches[0]
         session.kill_session()
         return ShellOutput(completed = True)
