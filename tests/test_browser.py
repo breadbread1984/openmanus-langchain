@@ -13,7 +13,11 @@ class TestBrowser(unittest.TestCase):
   def test_browser(self,):
     browser_tool = load_browser_tool(configs)
     result = browser_tool.invoke({'query': 'What is the Hang Seng Index today?'})
-    print(result)
+    print('is_done:', result.is_done)
+    print('is_successful:', result.is_successful)
+    print('has_errors', result.has_errors)
+    print('answer', result.answer)
+    print('screenshot_path', result.screenshot_path)
 
 if __name__ == "__main__":
   unittest.main()
