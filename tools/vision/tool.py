@@ -2,6 +2,7 @@
 
 from os.path import getsize, splitext
 from io import BytesIO
+import base64
 from typing import Type, List, Optional, Annotated, Literal, Union
 from pydantic import BaseModel, Field, ValidationError, model_validator
 from langchain_core.tools.structured import StructuredTool
@@ -70,7 +71,8 @@ def load_see_image_tool(configs):
         img.save(output, format="JPEG", quality=DEFAULT_JPEG_QUALITY, optimize=True)
         output_mime = "image/jpeg"
       compressed_bytes = output.getvalue()
-      return SeeImageOutput(base64 = compressed_bytes, mime_type = output_mime)
+      base64_image = base64.b64encode(compressed_bytes).decode('utf-8')
+      return SeeImageOutput(base64 = base64_image, mime_type = output_mime)
     async def _arun(self, file_path, run_manager: Optional[CallbackManagerForToolRun] = None):
       raise NotImplementedError("Async execution is not supported!")
   return SeeImageTool()

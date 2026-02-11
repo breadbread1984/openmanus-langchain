@@ -6,6 +6,7 @@ import unittest
 
 sys.path.append(abspath(join(dirname(__file__), '..')))
 
+import base64
 from tools import load_see_image_tool
 import configs
 
@@ -13,8 +14,9 @@ class TestSeeImage(unittest.TestCase):
   def test_see_image(self,):
     see_image_tool = load_see_image_tool(configs)
     result = see_image_tool.invoke({'file_path': 'test.png'})
+    img_bytes = base64.b64decode(result.base64.encode('utf-8'))
     with open('test2.png', 'wb') as f:
-      f.write(result.base64)
+      f.write(img_bytes)
 
 if __name__ == "__main__":
   unittest.main()
