@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
-dashscope_model = 'qwen-plus'
+dashscope_llm_model = 'qwen-plus'
+dashscope_vlm_model = 'qwen3-vl-plus'
 dashscope_url = 'https://dashscope.aliyuncs.com/compatible-mode/v1'
 dashscope_key = ''
 
-workspace_dir = "/workspace"
+workspace_dir = "./workspace"
