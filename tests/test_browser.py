@@ -15,9 +15,9 @@ class TestBrowser(unittest.TestCase):
     result = browser_tool.invoke({'query': 'What is the GDP per capita of Hong Kong?'})
     print('is_done:', result.is_done)
     print('is_successful:', result.is_successful)
-    print('has_errors', result.has_errors)
-    print('answer', result.answer)
-    print('screenshot_path', result.screenshot_path)
+    print('has_errors:', result.has_errors)
+    print('answer:', result.answer)
+    print('screenshot_path:', result.screenshot_path)
 
 if __name__ == "__main__":
   unittest.main()
