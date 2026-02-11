@@ -9,11 +9,15 @@ echo "1) starting ssh service ..."
 
 SSH_PID=$!
 
-# 2) launch xpra service
+# 2) launch xpra service without desktop
 echo "2) starting xpra service ..."
-xpra start :100 \
-    --start-child="xterm" \
-    --start-child="/usr/bin/dbus-launch" &
+xpra start :100 --start-child="/usr/bin/dbus-launch" &
+
+'''
+# 2) launch xpra service with desktop
+echo "2) starting xpra service ..."
+xpra start-desktop :100 --start=xfce4-session --dbus-launch=yes &
+'''
 
 XPRAPID=$!
 
