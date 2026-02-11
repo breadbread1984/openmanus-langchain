@@ -10,6 +10,8 @@ from PIL import Image
 
 DEFAULT_MAX_WIDTH = 1920
 DEFAULT_MAX_HEIGHT = 1080
+DEFAULT_JPEG_QUALITY = 85
+DEFAULT_PNG_COMPRESS_LEVEL = 6
 
 def load_see_image_tool(configs):
   class SeeImageInput(BaseModel):
