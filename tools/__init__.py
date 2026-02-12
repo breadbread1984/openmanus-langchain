@@ -4,3 +4,4 @@ from .browser import *
 from .shell import *
 from .file_management import *
 from .vision import *
+from .computer import *

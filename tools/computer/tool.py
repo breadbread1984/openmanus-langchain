@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 import time
+import tempfile
+import base64
 from typing import Type, List, Optional, Annotated, Literal, Union
 from pydantic import BaseModel, Field, model_validator
 from langchain_core.tools.structured import StructuredTool
@@ -94,37 +96,68 @@ def load_computer_tool(configs):
         raise ValueError("screenshot must be provided when action is 'screenshot'")
       return self
   class ComputerOutput(BaseModel):
-    result: str = Field(description = "whether action is taken successfully")
+    screenshot: Optional[str] = Field(None, description = "optional screenshot (png format) in base64 format of action 'screenshot'")
   class ComputerTool(StructuredTool):
     name: str = "computer_use"
     description: str = "Computer automation tool for controlling the desktop environment."
     args_schema: Type[BaseModel] = ComputerInput
     def _run(self, action, move_to = None, click = None, scroll = None, typing = None, press = None, wait = None, mouse_down = None, mouse_up = None, drag_to = None, hotkey = None, screenshot = None, run_manager: Optional[CallbackManagerForToolRun] = None):
-      try:
-        if action == "move_to":
-          assert move_to is not None, "move_to is None!"
-          pyautogui.moveTo(move_to.x, move_to.y)
-        elif action == "click":
-          assert click is not None, "click is None!"
-          if click.num_clicks == 1:
-            pyautogui.click(x = click.x, y = click.y, button = click.button)
-          elif click.num_clicks == 2:
-            pyautogui.doubleClick(x = click.x, y = click.y, button = click.button)
-          else:
-            raise "unknown number of mouse clicks!"
-        elif action == "scroll":
-          assert scroll is not None, "scroll is None!"
-          pyautogui.scroll(scroll.amount)
-        elif action == "typing":
-          assert typing is not None, "typing is None!"
-          pyautogui.typewrite(typing.text, interval = 0.01)
-        elif action == "press":
-          assert press is not None, "press is None!"
-          pyautogui.press(press.key)
-        elif action == "wait":
-          assert wait is not None, "wait is None!"
-          time.sleep(wait.duration)
-        elif action == "mouse_down":
-          assert mouse_down is not None, "mouse_down is None!"
-          pyautogui.mouseDown(x = mouse_down.x, y = mouse_down.y, button = mouse_down.button)
-        elif action == "mouse_up":
+      if action == "move_to":
+        assert move_to is not None, "move_to is None!"
+        pyautogui.moveTo(move_to.x, move_to.y)
+        return ComputerTool()
+      elif action == "click":
+        assert click is not None, "click is None!"
+        if click.num_clicks == 1:
+          pyautogui.click(x = click.x, y = click.y, button = click.button)
+        elif click.num_clicks == 2:
+          pyautogui.doubleClick(x = click.x, y = click.y, button = click.button)
+        else:
+          raise "unknown number of mouse clicks!"
+        return ComputerTool()
+      elif action == "scroll":
+        assert scroll is not None, "scroll is None!"
+        pyautogui.scroll(scroll.amount)
+        return ComputerTool()
+      elif action == "typing":
+        assert typing is not None, "typing is None!"
+        pyautogui.typewrite(typing.text, interval = 0.01)
+        return ComputerTool()
+      elif action == "press":
+        assert press is not None, "press is None!"
+        pyautogui.press(press.key)
+        return ComputerTool()
+      elif action == "wait":
+        assert wait is not None, "wait is None!"
+        time.sleep(wait.duration)
+        return ComputerTool()
+      elif action == "mouse_down":
+        assert mouse_down is not None, "mouse_down is None!"
+        pyautogui.mouseDown(x = mouse_down.x, y = mouse_down.y, button = mouse_down.button)
+        return ComputerTool()
+      elif action == "mouse_up":
+        assert mouse_up is not None, "mouse_up is None!"
+        pyautogui.mouseUp(x = mouse_up.x, y = mouse_up.y, button = mouse_up.button)
+        return ComputerTool()
+      elif action == "drag_to":
+        assert drag_to is not None, "drag_to is None!"
+        pyautogui.dragTo(x = drag_to.x, y = drag_to.y, duration = 0.3, button = 'left')
+        return ComputerTool()
+      elif action == "hotkey":
+        assert hotkey is not None, "hotkey is None!"
+        keys = hotkey.keys.split('+')
+        pyautogui.hotkey(*keys, interval = 0.01)
+        return ComputerTool()
+      elif action == "screenshot":
+        assert screenshot is not None, "screenshot is None!"
+        img = pyautogui.screenshot()
+        with tempfile.NamedTemporaryFile(suffix = ".png", delete = True) as f:
+            temp_path = f.name
+            f.close()
+        img.save(temp_path, format = 'PNG')
+        with open(temp_path, 'rb') as f:
+            img_bytes = f.read()
+        img_base64 = base64.b64encode(img_bytes).decode('utf-8')
+        return ComputerTool(screenshot = img_base64)
+  return ComputerTool()
+
