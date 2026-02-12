@@ -159,5 +159,7 @@ def load_computer_tool(configs):
           img_bytes = f.read()
         img_base64 = base64.b64encode(img_bytes).decode('utf-8')
         return ComputerTool(screenshot = img_base64)
+      else:
+        raise Exception('unknown action!')
   return ComputerTool()
 
