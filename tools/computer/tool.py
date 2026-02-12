@@ -108,7 +108,7 @@ def load_computer_tool(configs):
     args_schema: Type[BaseModel] = ComputerInput
     def _run(self, action, list_actions = None, move_to = None, click = None, scroll = None, typing = None, press = None, wait = None, mouse_down = None, mouse_up = None, drag_to = None, hotkey = None, screenshot = None, run_manager: Optional[CallbackManagerForToolRun] = None):
       if action == "list_actions":
-        result = """list_actions: elaborate functionality of all actions.
+        result = """list_actions: elaborate the functionalities of all actions.
 move_to: move mouse to given coordinate.
 click: click (or double click) the mouse by a specified button at a specified coordinate.
 scroll: scroll the mouse by a given amount.
