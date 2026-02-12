@@ -106,7 +106,7 @@ def load_computer_tool(configs):
     name: str = "computer_use"
     description: str = "Computer automation tool for controlling the desktop environment."
     args_schema: Type[BaseModel] = ComputerInput
-    def _run(self, action, move_to = None, click = None, scroll = None, typing = None, press = None, wait = None, mouse_down = None, mouse_up = None, drag_to = None, hotkey = None, screenshot = None, run_manager: Optional[CallbackManagerForToolRun] = None):
+    def _run(self, action, list_actions = None, move_to = None, click = None, scroll = None, typing = None, press = None, wait = None, mouse_down = None, mouse_up = None, drag_to = None, hotkey = None, screenshot = None, run_manager: Optional[CallbackManagerForToolRun] = None):
       if action == "list_actions":
         result = """list_actions: elaborate functionality of all actions.
 move_to: move mouse to given coordinate.
