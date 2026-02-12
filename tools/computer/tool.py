@@ -32,7 +32,7 @@ def load_computer_tool(configs):
     x: Optional[int] = Field(None, description = "X coordinate for mouse actions")
     y: Optional[int] = Field(None, description = "Y coordinate for mouse actions")
     button: Optional[Literal['left', 'right', 'middle']] = Field(None, description = "Mouse button for click/drag actions")
-    num_clicks: Literal[1,2] = Field(description = "Number of clicks to perform")
+    num_clicks: Optional[Literal[1,2]] = Field(default = 1, description = "Number of clicks to perform")
   class Scroll(BaseModel):
     amount: int = Field(description = "scroll amount (positive for up, negative for down)", ge = -10, le = 10)
   class Typing(BaseModel):
