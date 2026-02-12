@@ -152,11 +152,11 @@ def load_computer_tool(configs):
         assert screenshot is not None, "screenshot is None!"
         img = pyautogui.screenshot()
         with tempfile.NamedTemporaryFile(suffix = ".png", delete = True) as f:
-            temp_path = f.name
-            f.close()
+          temp_path = f.name
+          f.close()
         img.save(temp_path, format = 'PNG')
         with open(temp_path, 'rb') as f:
-            img_bytes = f.read()
+          img_bytes = f.read()
         img_base64 = base64.b64encode(img_bytes).decode('utf-8')
         return ComputerTool(screenshot = img_base64)
   return ComputerTool()
