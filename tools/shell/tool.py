@@ -13,6 +13,8 @@ import libtmux
 # NOTE: langchain-community has ShellTool which provide shell execution, but it cannot handle commands which blocks terminal
 
 def load_shell_tool(configs):
+  class ListActions(BaseModel):
+    pass
   class ExecuteCommand(BaseModel):
     command: str = Field(description = "The shell command to execute. Use this for running CLI tools, installing packages, or system operations. Commands can be chained using &&, ||, and | operators.")
     folder: Optional[str] = Field('', description = "Optional relative path to a subdirectory of /workspace where the command should be executed. Example: 'data/pdfs'")
@@ -26,7 +28,8 @@ def load_shell_tool(configs):
   class ListSessions(BaseModel):
     pass
   class ShellInput(BaseModel):
-    action: Literal['execute_command', 'check_command_output', 'terminate_command', 'list_sessions'] = Field(description = "the shell action to perform")
+    action: Literal['list_actions', 'execute_command', 'check_command_output', 'terminate_command', 'list_sessions'] = Field(description = "the shell action to perform")
+    list_actions: Optional[ListActions] = Field(None, description = "parameters for action 'list_actions'")
     execute_command: Optional[ExecuteCommand] = Field(None, description = "parameters for action 'execute_command'")
     check_command_output: Optional[CheckCommandOutput] = Field(None, description = "parameters for action 'check_command_output'")
     terminate_command: Optional[TerminateCommand] = Field(None, description = "parameters for action 'terminate_command'")
@@ -34,7 +37,10 @@ def load_shell_tool(configs):
     @model_validator(mode = "after")
     @classmethod
     def require_action_specific_field(cls, self):
-      if self.action == "execute_command":
+      if self.action == "list_actions":
+        if self.list_actions is None:
+          raise ValueError("list_actions must be provided when action is 'list_actions'")
+      elif self.action == "execute_command":
         if self.execute_command is None:
           raise ValueError("execute_command must be provided when action is 'execute_command'")
       elif self.action == "check_command_output":
@@ -66,8 +72,16 @@ This tool is essential for running CLI tools, installing packages, and managing 
     config: ShellConfig
     workspace_path: str = Field(default = "/workspace")
     done_marker: str = Field(default = f"DONE_{str(uuid4())}")
-    def _run(self, action, execute_command = None, check_command_output = None, terminate_command = None, list_sessions = None, run_manager: Optional[CallbackManagerForToolRun] = None):
-      if action == "execute_command":
+    def _run(self, action, list_actions = None, execute_command = None, check_command_output = None, terminate_command = None, list_sessions = None, run_manager: Optional[CallbackManagerForToolRun] = None):
+      if action == "list_actions":
+        assert list_actions is not None, "list_actions is None!"
+        output = """list_actions: elaborate the functionalities of all actions.
+execute_command: create a tmux session and execute a given command under a specified directory in the session.
+check_command_output: get the output of a given session.
+terminate_command: terminate execution of a given session.
+list_sessions: list all available sessions."""
+        return ShellOutput(output = output)
+      elif action == "execute_command":
         assert execute_command is not None, "execute_command is None!"
         # 1) create session or get session
         session_name = f"session_{str(uuid4())[:8]}" if execute_command.session_name is None else execute_command.session_name
