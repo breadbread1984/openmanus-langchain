@@ -25,6 +25,8 @@ HOT_KEYS = ["ctrl+c", "ctrl+v", "ctrl+x",
 ]
 
 def load_computer_tool(configs):
+  class ListActions(BaseModel):
+    pass
   class MoveTo(BaseModel):
     x: int = Field(description = "X coordinate for mouse actions")
     y: int = Field(description = "Y coordinate for mouse actions")
@@ -57,7 +59,8 @@ def load_computer_tool(configs):
   class Screenshot(BaseModel):
     pass
   class ComputerInput(BaseModel):
-    action: Literal['move_to', 'click', 'scroll', 'typing', 'press', 'wait', 'mouse_down', 'mouse_up', 'drag_to', 'hotkey', 'screenshot'] = Field(description = "The compute action to perform")
+    action: Literal['list_actions', 'move_to', 'click', 'scroll', 'typing', 'press', 'wait', 'mouse_down', 'mouse_up', 'drag_to', 'hotkey', 'screenshot'] = Field(description = "The compute action to perform")
+    list_actions: Optional[ListActions] = Field(None, "list all actions and their function introductions")
     move_to: Optional[MoveTo] = Field(None, "parameters for action 'move_to'")
     click: Optional[Click] = Field(None, "parameters for action 'click'")
     scroll: Optional[Scroll] = Field(None, "parameters for action 'scroll'")
@@ -72,6 +75,8 @@ def load_computer_tool(configs):
     @model_validator(mode = "after")
     @classmethod
     def require_action_specific_field(cls, self):
+      if self.action == "list_actions" and self.list_actions is None:
+        raise ValueError("list_actions must be provided when action is 'list_actions'")
       if self.action == "move_to" and self.move_to is None:
         raise ValueError("move_to must be provided when action is 'move_to'")
       elif self.action == "click" and self.click is None:
@@ -96,13 +101,27 @@ def load_computer_tool(configs):
         raise ValueError("screenshot must be provided when action is 'screenshot'")
       return self
   class ComputerOutput(BaseModel):
-    screenshot: Optional[str] = Field(None, description = "optional screenshot (png format) in base64 format of action 'screenshot'")
+    result: Optional[str] = Field(None, description = "optional output")
   class ComputerTool(StructuredTool):
     name: str = "computer_use"
     description: str = "Computer automation tool for controlling the desktop environment."
     args_schema: Type[BaseModel] = ComputerInput
     def _run(self, action, move_to = None, click = None, scroll = None, typing = None, press = None, wait = None, mouse_down = None, mouse_up = None, drag_to = None, hotkey = None, screenshot = None, run_manager: Optional[CallbackManagerForToolRun] = None):
-      if action == "move_to":
+      if action == "list_actions":
+        result = """list_actions: elaborate functionality of all actions.
+move_to: move mouse to given coordinate.
+click: click (or double click) the mouse by a specified button at a specified coordinate.
+scroll: scroll the mouse by a given amount.
+typing: input a specified text through keyboard.
+press: press a given key on the keyboard.
+wait: wait for a specified period of time in seconds.
+mouse_down: press a specified button on the mouse at a specified coordinate and hold.
+mouse_up: release a specified button of the mouse at a specified coordinate.
+drag_to: drag mouse from current coordinate to a specified coordinate.
+hotkey: send hot keys from keyboard.
+screenshot: snap a screenshot and return the bytes of the picture in base64 string."""
+        return ComputerOutput(result = result)
+      elif action == "move_to":
         assert move_to is not None, "move_to is None!"
         pyautogui.moveTo(move_to.x, move_to.y)
         return ComputerTool()
@@ -158,7 +177,7 @@ def load_computer_tool(configs):
         with open(temp_path, 'rb') as f:
           img_bytes = f.read()
         img_base64 = base64.b64encode(img_bytes).decode('utf-8')
-        return ComputerTool(screenshot = img_base64)
+        return ComputerTool(result = img_base64)
       else:
         raise Exception('unknown action!')
   return ComputerTool()
