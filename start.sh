@@ -21,5 +21,9 @@ xpra start-desktop :100 --start=xfce4-session --dbus-launch=yes &
 
 XPRAPID=$!
 
+# 3) install requirements
+
+python3 -m pip install -r requirements.txt
+
 # 5) block container
 wait $SSH_PID $XPRAPID

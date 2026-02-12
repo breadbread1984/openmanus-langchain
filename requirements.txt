@@ -5,4 +5,5 @@ langchain-openai
 langgraph
 pydantic
 libtmux
-
+pyautogui
+pillow
