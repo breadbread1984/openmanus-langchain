@@ -8,6 +8,8 @@ from langchain_community.agent_toolkits import FileManagementToolkit
 from langchain_core.callbacks.manager import CallbackManagerForToolRun
 
 def load_file_management_tool(configs):
+  class ListActions(BaseModel):
+    pass
   class CopyFile(BaseModel):
     source_path: str = Field(..., description = "Path of the file to copy")
     destination_path: str = Field(..., description = "Path to save the copied file")
@@ -28,7 +30,8 @@ def load_file_management_tool(configs):
     text: str = Field(..., description="text to write to file")
     append: bool = Field(default=False, description="Whether to append to an existing file.")
   class FileManagementInput(BaseModel):
-    action: Literal["copy_file", "file_delete", "file_search", "list_directory", "move_file", "read_file", "write_file"] = Field(..., description = "a file management action")
+    action: Literal["list_actions", "copy_file", "file_delete", "file_search", "list_directory", "move_file", "read_file", "write_file"] = Field(..., description = "a file management action")
+    list_actions: Optional[ListActions] = Field(None, description = "list all actions and their function introductions")
     copy_file: Optional[CopyFile] = Field(None, description = "parameters for action 'copy_file'")
     file_delete: Optional[FileDelete] = Field(None, description = "parameters for action 'file_delete'")
     file_search: Optional[FileSearch] = Field(None, description = "parameters for action 'file_search'")
@@ -39,7 +42,9 @@ def load_file_management_tool(configs):
     @model_validator(mode = "after")
     @classmethod
     def require_action_specific_field(cls, self):
-      if self.action == "copy_file" and self.copy_file is None:
+      if self.action == "list_actions" and self.list_actions is None:
+        raise ValueError("list_actions must be provided when action is 'list_actions'")
+      elif self.action == "copy_file" and self.copy_file is None:
         raise ValueError("copy_file must be provided when action is 'copy_file'")
       elif self.action == "file_delete" and self.file_delete is None:
         raise ValueError("file_delete must be provided when action is 'file_delete'")
@@ -65,8 +70,18 @@ def load_file_management_tool(configs):
     description: str = "This toolkit provides methods to interact with local files. available actions are copy_file, file_delete, file_search, list_directory, move_file, read_file and write_file."
     args_schema: Type[BaseModel] = FileManagementInput
     config: FileManagementConfig
-    def _run(self, action, copy_file = None, file_delete = None, file_search = None, list_directory = None, move_file = None, read_file = None, write_file = None, run_manager: Optional[CallbackManagerForToolRun] = None):
-      if action == "copy_file":
+    def _run(self, action, list_actions = None, copy_file = None, file_delete = None, file_search = None, list_directory = None, move_file = None, read_file = None, write_file = None, run_manager: Optional[CallbackManagerForToolRun] = None):
+      if action == "list_actions":
+        assert list_actions is not None, "list_actions is None!"
+        result = """list_actions: elaborate the functionalities of all actions.
+copy_file: copy a file from a given source path to another given destination path.
+file_delete: delete a file at a given path.
+file_search: search files under a given directory with a given file name regex pattern.
+list_directory: list files under a given directory.
+move_file: move file from a given source path to another given destination path.
+read_file: read the content of a file at the given file path.
+write_file: write a given text to a file at the given path."""
+      elif action == "copy_file":
         assert copy_file is not None, "copy_file is None!"
         result = self.config.tools['copy_file'].invoke({'source_path': copy_file.source_path, 'destination_path': copy_file.destination_path})
       elif action == "file_delete":
